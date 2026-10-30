@@ -1,3 +1,15 @@
+powershell
+uv run transcribe.py --video <video_id filmu 22>
+
+video_id jest w data\manifest.csv w wierszu 22. ABC.mp4. Wklej mi błąd, który wypisze, to go naprawię.
+
+3. „describe slides: skipped (add --vision)”: to jest celowe i wynika z mojej instrukcji, przepraszam, że nie napisałam tego wprost. Krok 3 był bez --vision, żeby nie płacić za opisy, zanim sprawdzisz jakość na jednym filmie (krok 4). Opisy slajdów i ekranów uruchamia dopiero:
+
+powershell
+uv run pipeline.py --mode all --vision
+
+Najpierw jednak wklej mi wynik komendy z listą filmów z poprzedniej wiadomości. Skoro describe_slides dało 0, coś jest nie tak ze slajdami, a --vision dałoby wtedy też 0.
+
 4. Ekrany Excel / Alteryx (10 min, ~$0.03)
 powershell
 uv run describe_slides.py --video <video_id> --limit 3
