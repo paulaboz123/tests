@@ -1,0 +1,62 @@
+1. Ustaw .env. Zmień lub dopisz te linie; komentarze trzymaj w osobnych liniach:
+
+RENDERER=remotion-pro
+STYLE=presenter
+PRO_PRESENTER=person-2d
+PRO_AVATAR=micah
+TTS_ENGINE=elevenlabs
+ELEVENLABS_API_KEY=<Twój klucz>
+ELEVENLABS_VOICE=lily
+ELEVENLABS_MONTHLY_CHARS=30000
+REMOTION_CONCURRENCY=4
+
+Ostatnia linia przyspiesza render: używa wszystkich 4 rdzeni.
+
+2. Uruchom Ollamę (aplikacja), potem:
+
+powershell
+uv run doctor.py
+
+Wszystkie wiersze powinny być OK.
+
+3. Szybki test głosu (ok. 40 znaków):
+
+powershell
+uv run tts.py "Hello, this is a short test of my new voice."
+
+Posłuchaj pliku data\output\tts_test_elevenlabs.wav.
+
+4. Porównanie: stara i nowa metoda, Kokoro i ElevenLabs. Wpisz w jednej linii:
+
+powershell
+uv run benchmark.py "Scrum roles" --minutes 1 --styles presenter --renderers remotion-pro --presenters person-2d:micah --voices kokoro:af_heart,elevenlabs:lily,elevenlabs:lily+plain,elevenlabs:george@flash
+Claude raz pisze skrypt, potem powstają z niego 4 wideo.
+Zajmie to ok. 40 min, z czego najwięcej render.
+Zużyje ok. 3000 znaków ElevenLabs z 30 000.
+
+5. Obejrzyj wyniki. Ścieżki wypisze się na końcu:
+
+data\output\<czas>-benchmark-scrum-roles\comparison.html: otwórz w przeglądarce. Najpierw posłuchaj w sekcji Audio: Lily (nowa metoda) vs Lily · old way (stara) vs Kokoro.
+benchmark.csv: wpisz oceny w kolumnach rating_voice_1to5 i rating_visuals_1to5.
+
+6. Sprawdź, czy ElevenLabs liczy kontekst:
+
+powershell
+uv run usage.py
+
+Porównaj zużyte znaki z tym, co pokazuje kolumna voice_cost_usd lub run_card.json w folderze wersji elevenlabs_lily. Jeśli liczby się zgadzają, kontekst nic nie kosztuje.
+
+7. Inne postacie bez ponownego płacenia za głos:
+
+powershell
+uv run benchmark.py --from "data\output\<czas>-benchmark-scrum-roles\script" --styles presenter --renderers remotion-pro --voices kokoro:af_heart --presenters robot,cat,person-2d:notionists
+
+Głos Kokoro jest darmowy. Wyjdą 3 wideo, po ok. 9–20 min każde.
+
+Jeśli coś nie działa:
+
+Komunikat	Co zrobić
+Remotion packages missing	cd remotion; npm.cmd install; cd ..
+Ollama at http://localhost:11434	uruchom aplikację Ollama
+ElevenLabs HTTP 401	zły klucz w .env
+wersja jako failed w comparison.html	powód jest pod nią; wyślij mi go
