@@ -1,0 +1,45 @@
+Jak uruchomić:
+
+Rozpakuj paczkę na paczkę 24.
+W .env dopisz (ID modeli są w mailu od zespołu platformy):
+RERANK_MODEL=<ID Claude Haiku>
+JUDGE_MODEL=<ID Claude Opus>
+Jedno pytanie na próbę:
+powershell
+uv run answer.py "What is Alteryx, and how many Alteryx workflows are running in finance?"
+Plan Clary (--compare porówna trzy sposoby szukania, czyli wyniki „przed” i „po”):
+powershell
+uv run qa_eval.py --set "Video_Accuracy_Test_Plan.xlsx" --compare
+Wyniki trafią do data\output\<czas>-qa-eval\:
+Plik	Co w nim jest
+qa_report.html	raport do wysłania
+Video_Accuracy_Test_Plan_results.xlsx	Excel Clary z dopisanymi kolumnami: odpowiedź, źródła (film · minuta), czy jest oczekiwany fakt, czy znaleziono oczekiwany film, stwierdzenia bez pokrycia w źródłach, PASS/CHECK i powód
+qa_results.csv	szczegóły, z kolumnami na Twoją ocenę
+
+Czy rozwiązanie spełnia ich wymagania:
+
+Wymaganie	Jak teraz działa
+Tylko tekst	answer.py: odpowiedź na pytanie, nie cała lekcja
+Z którego filmu, rozdziału, minuty	Przy każdym źródle: film, plik, czas (np. 03:10-04:05), slajd widoczny na ekranie; w dokumentach strona lub sekcja. Do tego dosłowny cytat-dowód.
+Nie zmyśla	Każde zdanie musi mieć źródło i cytat; kod sprawdza, czy cytat i liczby naprawdę są w źródle. Jeśli nie ma materiału, odpowiada „not covered”.
+Nie kopiuje 1:1	Mierzy, ile tekstu skopiowano słowo w słowo. Powyżej 30% przepisuje odpowiedź raz własnymi słowami.
+Wyciąga właściwe informacje	Szuka po znaczeniu i po dokładnych słowach (nazwy typu Alteryx, liczby). Z ok. 30 kandydatów model zostawia tylko te fragmenty, które naprawdę odpowiadają na pytanie.
+Priorytet danych	SOURCE_PRIORITY w .env, np. document=1.3
+
+Metryki w raporcie (każda w raporcie z opisem: jak liczona i dlaczego):
+
+Obszar	Metryka	Co mierzy
+Czy znalazł	Retrieval hit rate, MRR	czy oczekiwany film jest wśród użytych fragmentów i jak wysoko w wynikach
+Halucynacje	Faithfulness, hallucination rate	model-sędzia dzieli odpowiedź na pojedyncze stwierdzenia i sprawdza każde w cytowanym źródle
+Halucynacje (bez modelu)	Evidence verified, liczby, źródła	sprawdzenie w kodzie, niezależne od oceny modelu
+Poprawność	Key-fact recall	czy odpowiedź zawiera „Expected fact” Clary, w dowolnych słowach
+Jakość	Relevance, completeness, clarity (1–5)	czy odpowiada na pytanie, czy jest kompletna i jasna
+Wie, czego nie wie	Declines out-of-scope, false refusals	czy odmawia przy pytaniach spoza materiału, ale nie przy tych, które ma w materiale
+Własne słowa	Copy rate	ile tekstu przepisano słowo w słowo
+
+Sędzia powinien być innym modelem niż ten, który pisze odpowiedź (Opus ocenia Sonnet), żeby model nie oceniał sam siebie. Raport ostrzega, gdy to ten sam model.
+
+Dwie rzeczy do sprawdzenia przy pierwszym uruchomieniu:
+
+Numer w „4 - Tools @SE” musi się zgadzać z catalog_id w Waszym description.xlsx. Jeśli kolumna „Expected video found” pokaże same „no”, przyślij mi nagłówki i 2 wiersze z Excela.
+Kategorie, które zawierają „negative”, „out of scope” albo „hallucination”, kod traktuje jako pytania, na które poprawną odpowiedzią jest „not covered”. Jeśli Clara nazywa je inaczej, napisz jak.
